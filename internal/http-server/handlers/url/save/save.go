@@ -25,6 +25,7 @@ type Response struct {
 
 const aliasLength = 6
 
+//go:generate go run github.com/vektra/mockery/v2@v2.44.1 --name=UrlSaver
 type UrlSaver interface {
 	SaveUrl(urlToSave string, alias string) (int64, error)
 }
@@ -52,7 +53,8 @@ func New(log *slog.Logger, urlSaver UrlSaver) http.HandlerFunc {
 		log.Info("request body decoded", slog.Any("request", req))
 
 		if err := validator.New().Struct(req); err != nil {
-			validateErr := err.(validator.ValidationErrors)
+			var validateErr validator.ValidationErrors
+			errors.As(err, &validateErr)
 
 			log.Error("invalid request", sl.Err(err))
 
@@ -75,6 +77,23 @@ func New(log *slog.Logger, urlSaver UrlSaver) http.HandlerFunc {
 
 			return
 		}
+		if err != nil {
+			log.Error("failed to add url", sl.Err(err))
 
+			render.JSON(w, r, resp.Error("failed to add url"))
+
+			return
+		}
+
+		log.Info("url added", slog.Int64("id", id))
+
+		responseOk(w, r, alias)
 	}
+}
+
+func responseOk(w http.ResponseWriter, r *http.Request, alias string) {
+	render.JSON(w, r, Response{
+		Response: resp.Ok(),
+		Alias:    alias,
+	})
 }
