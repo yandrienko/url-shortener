@@ -13,7 +13,7 @@ jobs:
     env:
       HOST: root@31.129.58.173
       DEPLOY_DIRECTORY: /root/apps/url-shortener
-      CONFIG_PATH: /root/apps/url-shortener/config/prod.yaml
+      CONFIG_PATH: /root/apps/url-shortener/config/prod.yml
       ENV_FILE_PATH: /root/apps/url-shortener/config.env
 
     steps:
